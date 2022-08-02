@@ -1,0 +1,3 @@
+[submodule "micropythonexamples"]
+	path = micropythonexamples
+	url = git@github.com:cloudymike/micropythonexamples.git
