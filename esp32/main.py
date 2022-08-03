@@ -10,6 +10,12 @@ import grafanaconfig
 import esp32
 import machine
 
+print("Waking up")
+
+# Time out if it take more than 2 min to run
+# Will reset after deepsleep independent on sleep time
+wdt = machine.WDT(timeout=120000)
+
 # Time between samples in seconds
 INTERVAL=600
 # Blue LED
@@ -52,14 +58,23 @@ if __name__ == "__main__":
     print("Sending data {}".format(data))
 
     # Send http post to grafana.net
-    response = urequests.post(
-        grafanaconfig.GRAFANA_URL,
-        data=data,
-        auth = (grafanaconfig.GRAFANA_USER, grafanaconfig.GRAFANA_TOKEN),
-        headers=headers
-    )
-    status = response.status_code
-    print("HTTP status code: {}".format(status))
+    # Do a retry for number of times listed in count
+    count = 10
+    status = 0
+    while status != 200 and count != 0:
+        try:
+            response = urequests.post(
+                grafanaconfig.GRAFANA_URL,
+                data=data,
+                auth = (grafanaconfig.GRAFANA_USER, grafanaconfig.GRAFANA_TOKEN),
+                headers=headers
+            )
+            status = response.status_code
+        except:
+            status = 0
+            time.sleep(10)
+        count = count - 1;
+        print("HTTP status code: {}".format(status))
 
     # Turn off LED as we go do sleep
     LED.value(0)
