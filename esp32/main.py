@@ -10,7 +10,12 @@ import grafanaconfig
 import esp32
 import machine
 
-print("Waking up")
+if machine.reset_cause() == machine.DEEPSLEEP_RESET:
+    print('# Woke from a deep sleep..resetting')
+    machine.reset()
+else:
+    print('Waking up from power on or hard reset')
+
 
 # Time out if it take more than 2 min to run
 # Will reset after deepsleep independent on sleep time
